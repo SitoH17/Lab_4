@@ -1,23 +1,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
 // Calcular filas y columnas automáticamente
 #define FILAS(x) (sizeof(x) / sizeof((x)[0]))
 #define COLUMNAS(x) (sizeof((x)[0]) / sizeof((x)[0][0]))
 
+// Función para imprimir la matriz
 
-// Función para imprimir una matriz utilizando punteros
 void imprimirMatriz(int *matriz, int filas, int columnas) {
     for (int i = 0; i < filas; i++) {
         for (int j = 0; j < columnas; j++) {
-            printf("%4d ", *(matriz + i * columnas + j));
+            printf("%4d ", *(matriz + i * columnas + j)); 
         }
         printf("\n");
     }
     printf("\n");
 }
-// Uso de BubbleSort
+
+
+// Uso de bubbleSort con punteros
 
 void bubbleSort(int *array, int total) {
     for (int i = 0; i < total - 1; i++) {
@@ -33,8 +34,8 @@ void bubbleSort(int *array, int total) {
     }
 }
 
-
 // Función principal
+
 int main() {
     // Matriz 3x3
     int m1[3][3] = {
@@ -92,8 +93,6 @@ int main() {
 
     printf("Matriz 3 ordenada (%dx%d):\n", filas3, columnas3);
     imprimirMatriz((int *)m3, filas3, columnas3);
-
-    printf("Fin del programa.\n");
 
     return 0;
 }
