@@ -1,100 +1,86 @@
+
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
 
-
-// Calcular filas y columnas automáticamente
-#define FILAS(x) (sizeof(x) / sizeof((x)[0]))
-#define COLUMNAS(x) (sizeof((x)[0]) / sizeof((x)[0][0]))
-
-
-// Función para imprimir una matriz utilizando punteros
-void imprimirMatriz(int *matriz, int filas, int columnas) {
-    for (int i = 0; i < filas; i++) {
-        for (int j = 0; j < columnas; j++) {
-            printf("%4d ", *(matriz + i * columnas + j));
-        }
-        printf("\n");
-    }
-    printf("\n");
-}
-// Uso de BubbleSort
-
-void bubbleSort(int *array, int total) {
-    for (int i = 0; i < total - 1; i++) {
-        for (int j = 0; j < total - i - 1; j++) {
-            int *a = array + j;
-            int *b = array + j + 1;
-            if (*a > *b) {
-                int temp = *a;
-                *a = *b;
-                *b = temp;
-            }
+// Quita los signos para comparar las palabras
+void limpiarParaComparar(const char *origen, char *destino) {
+    int j = 0;
+    for (int i = 0; origen[i] != '\0'; i++) {
+        if (isalnum((unsigned char)origen[i])) {
+            destino[j++] = origen[i];
         }
     }
+    destino[j] = '\0';
 }
-
 
 // Función principal
-int main() {
-    // Matriz 3x3
-    int m1[3][3] = {
-        {9, 2, 7},
-        {5, 1, 3},
-        {8, 6, 4}
-    };
+int main(int argc, char *argv[]) {
 
-    int filas1 = FILAS(m1);
-    int columnas1 = COLUMNAS(m1);
-    int total1 = filas1 * columnas1;
+    // Ver si estan todas las palabras
+    if (argc != 4) {
+        fprintf(stderr, "Uso: %s <archivo_entrada> <palabra_buscar> <palabra_reemplazo>\n", argv[0]);
+        return 1;
+    }
 
-    printf("Matriz 1 original (%dx%d):\n", filas1, columnas1);
-    imprimirMatriz((int *)m1, filas1, columnas1);
+    // Abrir el archivo
+    FILE *entrada = fopen(argv[1], "r");
+    if (entrada == NULL) {
+        perror("Error al abrir el archivo de entrada");
+        return 1;
+    }
 
-    bubbleSort((int *)m1, total1);
+    FILE *salida = fopen("salida.txt", "w");
+    if (salida == NULL) {
+        perror("Error al crear el archivo de salida");
+        fclose(entrada);
+        return 1;
+    }
 
-    printf("Matriz 1 ordenada (%dx%d):\n", filas1, columnas1);
-    imprimirMatriz((int *)m1, filas1, columnas1);
+    const char *buscar = argv[2];
+    const char *reemplazo = argv[3];
+    char palabra[256];
+    char palabraComparada[256];
 
-    // Matriz 2x4
-    int m2[2][4] = {
-        {10, 4, 7, 2},
-        {8, 1, 9, 3}
-    };
+    // Leer cada carácter
 
-    int filas2 = FILAS(m2);
-    int columnas2 = COLUMNAS(m2);
-    int total2 = filas2 * columnas2;
+    int c;
+    while ((c = fgetc(entrada)) != EOF) {
 
-    printf("Matriz 2 original (%dx%d):\n", filas2, columnas2);
-    imprimirMatriz((int *)m2, filas2, columnas2);
+        // Si el carácter no es espacio, empezamos a leer una palabra
+        if (!isspace(c)) {
+            ungetc(c, entrada); // devolvemos el carácter leído
+            if (fscanf(entrada, "%255s", palabra) == 1) {
 
-    bubbleSort((int *)m2, total2);
+                limpiarParaComparar(palabra, palabraComparada);
 
-    printf("Matriz 2 ordenada (%dx%d):\n", filas2, columnas2);
-    imprimirMatriz((int *)m2, filas2, columnas2);
+                if (strcasecmp(palabraComparada, buscar) == 0) {
+                    int inicio = 0;
+                    int fin = strlen(palabra) - 1;
 
-    // Matriz 4x2
-    int m3[4][2] = {
-        {12, 5},
-        {7, 14},
-        {1, 9},
-        {8, 3}
-    };
+                    if (ispunct((unsigned char)palabra[fin])) {
+                        fprintf(salida, "%s%c", reemplazo, palabra[fin]);
+                    } else if (ispunct((unsigned char)palabra[inicio])) {
+                        fprintf(salida, "%c%s", palabra[inicio], reemplazo);
+                    } else {
+                        fprintf(salida, "%s", reemplazo);
+                    }
+                } else {
+                    // Si no coincide, escribir palabra original
+                    fprintf(salida, "%s", palabra);
+                }
+            }
+        } else {
+            fputc(c, salida);
+        }
+    }
 
-    int filas3 = FILAS(m3);
-    int columnas3 = COLUMNAS(m3);
-    int total3 = filas3 * columnas3;
+    // Cierre de archivos
+    fclose(entrada);
+    fclose(salida);
 
-    printf("Matriz 3 original (%dx%d):\n", filas3, columnas3);
-    imprimirMatriz((int *)m3, filas3, columnas3);
-
-    bubbleSort((int *)m3, total3);
-
-    printf("Matriz 3 ordenada (%dx%d):\n", filas3, columnas3);
-    imprimirMatriz((int *)m3, filas3, columnas3);
-
-    printf("Fin del programa.\n");
-
+    printf("Reemplazo completado con éxito.\n");
+    printf("Archivo modificado guardado como 'salida.txt'\n");
     return 0;
 }
-
